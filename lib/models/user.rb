@@ -51,6 +51,7 @@ module HighDawn
 
       friends=friends(from: from, to: to)
       followers=followers(from: from, to: to)
+      
       inter=(followers & friends)
       f=FriendshipCollection.new()
       f.replace(inter)

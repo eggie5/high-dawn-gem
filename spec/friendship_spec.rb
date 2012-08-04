@@ -56,4 +56,36 @@ describe FriendshipCollection do
     new_friends.length.should eq 1
     new_friends.first.id.should eq 2
   end
+
+  it "should do interscetions and return newest date" do
+    f1=Friendship.new
+    f1.id=1
+    f1.timestamp=10.days.ago
+    a=FriendshipCollection.new
+    a.push f1
+
+    #assume frinds from time B
+    f2=Friendship.new
+    f2.id=1
+    ts=5.days.ago
+    f2.timestamp=ts
+
+    f3=Friendship.new
+    f3.id=2
+    f3.timestamp=3.days.ago
+
+    b=FriendshipCollection.new
+    b.push f2
+    b.push f3
+    
+    inter=(a & b)
+    inter.length.should eq 1
+    item=inter.first
+    item.timestamp.to_i.should eq ts.to_i
+    
+    inter2=(b & a)
+    inter2.length.should eq 1
+    item2=inter2.first
+    item2.timestamp.to_i.should eq ts.to_i
+  end
 end

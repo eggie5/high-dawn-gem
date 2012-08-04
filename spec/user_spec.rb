@@ -27,15 +27,15 @@ describe User do
   
   it "should get follower and then follow him back" do 
     u=User.new uid=2399
-    follow_time=5.days.ago
+    follow_time=10.hours.ago
     id=1
-    u.add_follower(follow_time, id)
+    u.add_follower(follow_time, id) #kristy followed me
     u.save
     
     u.bros.length.should eq 0
     
-    add_time=3.days.ago
-    u.add_friend(add_time, id)
+    add_time=4.hours.ago # 6 hours later I follow her back -- this is the time we become bros!
+    u.add_friend(add_time, id) #
     u.save
     
     bros=u.bros

@@ -47,7 +47,7 @@ module HighDawn
       self.each_with_index do |key, index|
         value = hash.delete key
         if value == true
-          if self[index].timestamp > other[index].timestamp
+          if self[index].timestamp.to_i > other[index].timestamp.to_i
             new << self[index]
           else
             new << other[index]

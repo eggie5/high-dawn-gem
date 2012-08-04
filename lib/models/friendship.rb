@@ -8,6 +8,56 @@ module HighDawn
       self.collect{|friendship|friendship.id}
     end
 
+    def aaaa(other)
+      arr=[]
+      self.each do |i|
+        other.each do |j|
+          if(i.hash == j.hash)
+            arr.push
+          end
+        end
+      end
+      arr
+    end
+
+    def make_hash(*arrays)
+      hash = Hash.new
+
+      arrays.each do |array|
+        array.each_with_index do |key, i|
+          hash[key] = true
+        end
+      end
+
+      return hash
+    end
+
+    def convert(object)
+      unless object.respond_to? :to_ary then
+        raise TypeError, "cannot convert " + object.class.name + " into Array"
+      end
+      return object.to_ary
+    end
+
+    def &(other)
+      other = convert other
+      new = Array.new
+      hash = make_hash other
+
+      self.each_with_index do |key, index|
+        value = hash.delete key
+        if value == true
+          if self[index].timestamp > other[index].timestamp
+            new << self[index]
+          else
+            new << other[index]
+          end
+        end
+      end
+
+      return new
+    end
+
   end
 
   class Friendship

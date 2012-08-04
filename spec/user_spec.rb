@@ -5,6 +5,45 @@ include HighDawn
 
 describe User do
   
+  it "should add friend then from should follow back" do
+    u=User.new uid=893
+    add_time=1.day.ago
+    id=9999
+    u.add_friend(add_time, id)
+    u.save
+    
+    u.bros.length.should eq 0
+    
+    follow_time=3.hours.ago
+    u.add_follower(follow_time, id)
+    u.save
+    
+    bros=u.bros
+    bros.length.should eq 1
+    bro=bros.first
+    bro.timestamp.to_i.should eq follow_time.to_i #should be time they followed me back
+    bro.id.should eq id
+  end
+  
+  it "should get follower and then follow him back" do 
+    u=User.new uid=2399
+    follow_time=5.days.ago
+    id=1
+    u.add_follower(follow_time, id)
+    u.save
+    
+    u.bros.length.should eq 0
+    
+    add_time=3.days.ago
+    u.add_friend(add_time, id)
+    u.save
+    
+    bros=u.bros
+    bros.length.should eq 1
+    bro=bros.first
+    bro.timestamp.to_i.should eq add_time.to_i #should be time I followed them back
+  end
+  
   it 'should have a timeline of events' do 
     u=User.new 24321
     (1..10).each do |i|

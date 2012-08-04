@@ -65,12 +65,15 @@ module HighDawn
       screen_names=[]
       
       ids.each_slice(99).to_a.each do |arr|
-        _screen_names=twitter.client.friendships(arr).map{|user| [user.screen_name, user.id]}
+        _screen_names=twitter.client.friendships(arr).map{|user| [user.screen_name, user.id] }
         
         _screen_names.each do |screen_name|
+          url=Twitter.user(screen_name[1]).profile_image_url
           puts "tuid:#{screen_name[1]}=#{screen_name[0]}"
+          puts "tuid:#{screen_name[1]}:image_url=#{url}"
           REDIS.pipelined do
             REDIS.set("tuid:#{screen_name[1]}", screen_name[0])
+            REDIS.set("tuid:#{screen_name[1]}:image_url", url)
           end
         end
         screen_names.concat _screen_names

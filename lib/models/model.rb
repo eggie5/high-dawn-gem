@@ -32,18 +32,22 @@ module HighDawn
       u
     end
 
-    def read(from=3.years.ago, to=Time.now, user_id, filter) #filter = :friends | :followers
+    def read(from=3.years.ago, to=Time.now, user_id, filter) #filter = :friends | :followers | :all
 
       zkey="users:#{user_id}:timestamps"
       all_ts=@r.zrange(zkey, 0, -1).collect(&:to_i)
       timestamps=get_range(all_ts, from.to_i, to.to_i)
 
-      hash=build_hash_from_redis(timestamps, user_id)
+      @hash=build_hash_from_redis(timestamps, user_id)
+      
+      if(filter==:all)
+        return @hash
+      end
 
 
       collection=FriendshipCollection.new
 
-      hash.each do |timestamp, bucket|
+      @hash.each do |timestamp, bucket|
         if(from <= timestamp && timestamp <= to)
           bucket.each do |node|
             event=node[:event]

@@ -87,5 +87,12 @@ module HighDawn
 
       read(from, to, self.id, :followers)
     end
+    
+    def timeline(options={})
+      from=options[:from] || 3.years.ago
+      to=options[:to] || Time.now
+      
+      read(from, to, self.id, :all)
+    end
   end
 end

@@ -4,6 +4,29 @@ include HighDawn
 
 
 describe User do
+  
+  it 'should have a timeline of events' do 
+    u=User.new 24321
+    (1..10).each do |i|
+      u.add_friend(i.days.ago, i)
+    end
+    (1..10).each do |j|
+      u.add_follower((j+20).days.ago, j+20)
+    end
+    u.save
+    
+    u.friends.length.should eq 10
+    u.followers.length.should eq 10
+    u.hash.length.should eq 20
+    last_hash = u.hash
+    
+    #NOW load diff instance and see if it's in the hash
+    u=User.new 24321
+    timeline=u.timeline
+    timeline.class.should eq Hash
+    timeline.length.should eq 20
+    timeline.should eq last_hash
+  end
 
   it 'should my followers between april and november' do
     u=User.new 881

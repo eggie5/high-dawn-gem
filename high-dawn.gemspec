@@ -5,19 +5,24 @@
 
 Gem::Specification.new do |s|
   s.name = "high-dawn"
-  s.version = "0.2.0"
+  s.version = "0.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Alex Egg"]
-  s.date = "2012-08-03"
+  s.date = "2012-08-04"
   s.description = "for project high-dawn"
   s.email = "eggie5@gmail.com"
+  s.extra_rdoc_files = [
+    "LICENSE.txt",
+    "README.md",
+    "README.rdoc"
+  ]
   s.files = [
-    ".gitignore",
     "Gemfile",
     "Gemfile.lock",
     "Guardfile",
     "LICENSE.txt",
+    "README.md",
     "README.rdoc",
     "Rakefile",
     "VERSION",

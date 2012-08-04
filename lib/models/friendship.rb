@@ -25,7 +25,7 @@ module HighDawn
 
       arrays.each do |array|
         array.each_with_index do |key, i|
-          hash[key] = true
+          hash[key] = key
         end
       end
 
@@ -44,13 +44,13 @@ module HighDawn
       new = Array.new
       hash = make_hash other
 
-      self.each_with_index do |key, index|
+      self.each do |key|
         value = hash.delete key
-        if value == true
-          if self[index].timestamp.to_i > other[index].timestamp.to_i
-            new << self[index]
+        if value == key
+          if key.timestamp.to_i > value.timestamp.to_i
+            new << key
           else
-            new << other[index]
+            new << value
           end
         end
       end

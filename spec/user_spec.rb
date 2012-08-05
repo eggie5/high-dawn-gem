@@ -28,6 +28,32 @@ include HighDawn
 # end
 
 describe User do
+  
+  it "should add non_bro to watch list" do
+    u=User.new id=32002
+    u.add_friend(1)
+    u.add_friend(2)
+    u.save
+    u.non_bros.length.should eq 2
+    
+    #now I want to target this user and add them
+    #to my watch list in hopes of engadgeing them
+    #w/ usefully comments, etc and getting them
+    #to follow me back
+    
+    u.watch_list= [u.non_bros[0].id, u.non_bros[1].id]
+    u.watch_list.length.should eq 2
+    
+    #now check my watch list
+    u=User.new id=32002
+    u.watch_list.length.should eq 2
+    p u.watch_list
+    u.watch_list.include?(1).should eq true
+    u.watch_list.include?(2).should eq true
+    
+    
+  end
+  
   it "should show all tweets sent" do
     u=User.new id=2839
     

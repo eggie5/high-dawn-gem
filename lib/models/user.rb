@@ -1,11 +1,14 @@
 require_relative 'model'
 require_relative 'friendship'
+require_relative 'watch_list_model'
 require 'active_support/all'
 
 module HighDawn
 
   class User < TimelineModel
     include TweetModel
+    include WatchListModel
+    
     attr_accessor :id
     attr_reader :hash
     def initialize(twitter_id)
@@ -105,6 +108,15 @@ module HighDawn
     #either get all tweets from this user or tweets targeting someone
     def tweets(to=nil)
       @tweets = rread(to)
+    end
+    
+    def watch_list=(list)
+      @watch_list=list
+      wsave
+    end
+    
+    def watch_list
+      @watch_list=wread
     end
 
     #proxy to read timeline in model

@@ -42,7 +42,7 @@ module HighDawn
       p "lost_followers: #{lost_followers}"
 
 
-      if (new_friends+unfriended+new_friends+lost_followers).empty?
+      if (new_friends+unfriended+new_followers+lost_followers).empty?
         p "No diff - returning"
         puts ""
         puts "---------------------"

@@ -16,13 +16,17 @@ module HighDawn
       end
 
       twitter=TwitterUser.new
+
+      puts "---------------------"
+      puts " "
       puts "Generating snapshot for #{twitter.client.user.screen_name} (#{twitter.client.user.id})"
+      p (Twitter.rate_limit_status.remaining_hits.to_s + " Twitter API request(s) remaining this hour")
       u=User.new twitter.client.user.id
 
       #check if there are any changes from last snapshot -- if not skip
       a_friends=u.friends.ids
       a_followers=u.followers.ids
-      
+
       b_friends=twitter.friends
       b_followers=twitter.followers
 
@@ -36,6 +40,18 @@ module HighDawn
       p "unfriended: #{unfriended}"
       p "new_followers: #{new_followers}"
       p "lost_followers: #{lost_followers}"
+
+
+      if (new_friends+unfriended+new_friends+lost_followers).empty?
+        p "No diff - returning"
+        puts ""
+        puts "---------------------"
+        return
+      end
+
+      p "diff found - persisting changes"
+      puts ""
+      puts "---------------------"
 
       # persist
       new_friends.each do |nf|
@@ -54,31 +70,36 @@ module HighDawn
         u.remove_follower(lf)
       end
 
-      p u.save
-      
+      u.save
+
       self.cache_usernames(new_friends + new_followers)
     end
 
     def self.cache_usernames(ids)
       #cache user names
       twitter=TwitterUser.new
-      screen_names=[]
-      
-      ids.each_slice(99).to_a.each do |arr|
-        _screen_names=twitter.client.friendships(arr).map{|user| [user.screen_name, user.id] }
-        
-        _screen_names.each do |screen_name|
-          url=Twitter.user(screen_name[1]).profile_image_url
-          puts "tuid:#{screen_name[1]}=#{screen_name[0]}"
-          puts "tuid:#{screen_name[1]}:image_url=#{url}"
+
+      ids.each_slice(99).to_a.each do |ids_slice|
+        users=twitter.client.friendships(ids_slice).map{|u| [u.screen_name, u.id] }
+
+        users.each do |arr|
+          id = arr[1]
+          screen_name=arr[0]
+
+          url=Twitter.user(id).profile_image_url
+          url_key="tuid:#{id}:image_url"
+
+          p "tuid:#{id}=#{screen_name}"
+          p "#{url_key}=#{url}"
+
           REDIS.pipelined do
-            REDIS.set("tuid:#{screen_name[1]}", screen_name[0])
-            REDIS.set("tuid:#{screen_name[1]}:image_url", url)
+            TweetModel::cache_id(id, screen_name)
+            REDIS.set(url_key, url)
           end
         end
-        screen_names.concat _screen_names
+
       end
-      screen_names
+
     end
 
   end #end class

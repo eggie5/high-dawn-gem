@@ -13,8 +13,8 @@ module HighDawn
 
       @client = Twitter
 
-      s= Twitter.rate_limit_status.remaining_hits.to_s + " Twitter API request(s) remaining this hour"
-      puts s
+      #s= Twitter.rate_limit_status.remaining_hits.to_s + " Twitter API request(s) remaining this hour"
+      #puts s
     end
 
     def friends

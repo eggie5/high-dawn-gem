@@ -1,4 +1,5 @@
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib', 'models'))
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'scripts'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'rspec'
 require 'high-dawn'
@@ -6,6 +7,8 @@ require 'user'
 require 'friendship'
 require 'model'
 require 'tweet'
+require 'snapshot'
+
 
 REDIS=Redis.new(db: 1)
 

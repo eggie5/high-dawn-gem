@@ -29,6 +29,21 @@ include HighDawn
 
 describe User do
   
+  it "should have a timeline of events" do 
+    u=User.new id=2229941
+    u.add_friend(3.weeks.ago, 1)
+    u.add_friend(2.weeks.ago, 2)
+    rt=1.week.ago
+    u.remove_friend(rt, 1)
+    u.save
+    timeline=u.timeline
+    
+    ap timeline
+    
+    timeline.length.should eq 3
+    timeline[timeline.keys.last].first[:event].should eq :unfollow
+  end
+  
   it "should add non_bro to watch list" do
     u=User.new id=32002
     u.add_friend(1)
@@ -47,7 +62,7 @@ describe User do
     #now check my watch list
     u=User.new id=32002
     u.watch_list.length.should eq 2
-    p u.watch_list
+    # p u.watch_list
     u.watch_list.include?(1).should eq true
     u.watch_list.include?(2).should eq true
     

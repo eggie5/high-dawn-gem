@@ -57,26 +57,13 @@ module HighDawn
             follower=node[:follower]
             followee=node[:followee]
 
-            f=Friendship.new
-            f.timestamp=timestamp
+            f=Friendship.new ; f.timestamp=timestamp
+            f.id=(follower==user_id)? followee : follower
 
-            if(filter==:friends)
-              if(follower==user_id)
-                f.id=followee
-                if(event==:follow)
-                  collection.push f
-                elsif(event==:unfollow)
-                  collection.delete f
-                end
-              end
-            elsif(filter==:followers)
-              if(followee==user_id)
-                f.id=follower
-                if(event==:follow)
-                  collection.push f
-                elsif(event==:unfollow)
-                  collection.delete f
-                end
+            if((filter==:friends && follower==user_id ) || (filter==:followers && followee==user_id))
+              case event
+              when :follow then collection.push f
+              when :unfollow then collection.delete f
               end
             end
 

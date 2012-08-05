@@ -5,6 +5,7 @@ require 'high-dawn'
 require 'user'
 require 'friendship'
 require 'model'
+require 'tweet'
 
 REDIS=Redis.new(db: 1)
 

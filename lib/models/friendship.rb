@@ -1,4 +1,4 @@
-require_relative 'model'
+require_relative 'tweet_model'
 require 'time'
 
 module HighDawn
@@ -6,18 +6,6 @@ module HighDawn
 
     def ids
       self.collect{|friendship|friendship.id}
-    end
-
-    def aaaa(other)
-      arr=[]
-      self.each do |i|
-        other.each do |j|
-          if(i.hash == j.hash)
-            arr.push
-          end
-        end
-      end
-      arr
     end
 
     def make_hash(*arrays)
@@ -61,18 +49,23 @@ module HighDawn
   end
 
   class Friendship
+    include TweetModel
     attr_accessor :timestamp, :id
 
     def initialize()
+      super(0)
+      @tweets=[]
     end
 
-    def tweets=(arr)
+    def tweets=(new_tweets)
+      @tweets=new_tweets
+      ssave
+    end
+    
+    def tweets(to=@id) #filter=:all | :id
+      @tweets = rread(to)
     end
 
-    def tweets
-      #do DB lookup for tweets?
-      []
-    end
 
     def eql?(o)
       self==(o)

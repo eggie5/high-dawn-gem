@@ -4,7 +4,8 @@ require 'active_support/all'
 
 module HighDawn
 
-  class User < Model
+  class User < TimelineModel
+    include TweetModel
     attr_accessor :id
     attr_reader :hash
     def initialize(twitter_id)
@@ -51,7 +52,7 @@ module HighDawn
 
       friends=friends(from: from, to: to)
       followers=followers(from: from, to: to)
-      
+
       inter=(friends & followers)
       f=FriendshipCollection.new()
       f.replace(inter)
@@ -65,7 +66,7 @@ module HighDawn
       f=friends(from: from, to: to)
       b=bros(from: from, to: to)
       diff=(f - b)
-      
+
       f=FriendshipCollection.new()
       f.replace(diff)
       f
@@ -88,12 +89,32 @@ module HighDawn
 
       read(from, to, self.id, :followers)
     end
-    
+
     def timeline(options={})
       from=options[:from] || 3.years.ago
       to=options[:to] || Time.now
-      
+
       read(from, to, self.id, :all)
+    end
+
+    def tweets=(new_tweets)
+      @tweets=new_tweets
+      ssave
+    end
+
+    #either get all tweets from this user or tweets targeting someone
+    def tweets(to=nil)
+      @tweets = rread(to)
+    end
+
+    #proxy to read timeline in model
+    def read(from=3.years.ago, to=Time.now, user_id, filter)
+      read_timeline(from, to, user_id, filter)
+    end
+
+    #proxy to save timeline in model
+    def save
+      save_timeline
     end
   end
 end

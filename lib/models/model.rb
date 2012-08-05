@@ -1,14 +1,15 @@
 require 'redis'
 require 'time'
 module HighDawn
-  class Model
+  class TimelineModel
     def initialize(id)
       @hash={}
       @r=REDIS
+      @tweets=[]
     end
 
 
-    def save
+    def save_timeline
       raise "blank id" if nil?
       @hash.each do |timestamp, bucket|
         bucket.each do |node|
@@ -32,14 +33,16 @@ module HighDawn
       u
     end
 
-    def read(from=3.years.ago, to=Time.now, user_id, filter) #filter = :friends | :followers | :all
+
+
+    def read_timeline(from=3.years.ago, to=Time.now, user_id, filter) #filter = :friends | :followers | :all
 
       zkey="users:#{user_id}:timestamps"
       all_ts=@r.zrange(zkey, 0, -1).collect(&:to_i)
       timestamps=get_range(all_ts, from.to_i, to.to_i)
 
       @hash=build_hash_from_redis(timestamps, user_id)
-      
+
       if(filter==:all)
         return @hash
       end

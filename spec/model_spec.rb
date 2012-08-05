@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 require 'redis'
 require 'ap'
 
-describe Model do
+describe TimelineModel do
 
   it "should build hash from redis" do
      u=User.new 61
@@ -18,7 +18,7 @@ describe Model do
      before_hash.keys.length.should eq 2
      #now assert that the correct hash is rebuild from redis
    
-     m=Model.new u.id
+     m=TimelineModel.new u.id
      after_hash=m.build_hash_from_redis([time.to_i, 3.days.ago.to_i], u.id)
    
      before_hash.keys.length.should eq after_hash.keys.length
@@ -36,11 +36,11 @@ describe Model do
    
      #this should populate a new hash from redis
      #THIS WONT PASS UNLESSR READ USES REDIS
-     m=Model.new u.id
-     friends = m.read(3.years.ago, Time.now, u.id, :friends)
-     friends.class.should eq FriendshipCollection
+     m=TimelineModel.new u.id
+     timeline = m.read_timeline(3.years.ago, Time.now, u.id, :friends)
+     timeline.class.should eq FriendshipCollection
    
-     friends.length.should eq 1
+     timeline.length.should eq 1
      #friends[0].id.should eq tid
    
    end

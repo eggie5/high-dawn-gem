@@ -2,49 +2,135 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 require 'ap'
 include HighDawn
 
+# describe Timeline do
+#   it "should have Friendships" do
+#     timeline = Timeline.load
+#     timeline.class.should eq Timeline
+#     timeline.length.should eq 40
+#     timeline.first.class.should eq TimelineEvent
+#     timeline.first.timestamp.should eq 3.days.ago
+#   end
+#
+#   it "should filter by user" do
+#     u=User.find(23424)
+#     u.timeline.class.should eq Timeline
+#     u.timeline.friends.length.should eq 10
+#     u.timeline.followers.length.should eq 9
+#     u.timeline.bros.length.should eq 8
+#     u.timeline.non_bros.length.should eq 6
+#     u.timeline.bros.first.class.should eq Friendship
+#     u.timeline.bros.first.timestamp.should eq 3.days.ago
+#     tweets=u.timeline.bros.first.tweets
+#     tweets.lenght.should eq 10
+#     u.timeline.
+#
+#   end
+# end
 
 describe User do
-  
+  it "should show all tweets sent" do
+    u=User.new id=2839
+    
+    general_tweet=Tweet.new "I am a general tweet not to anybody in particular"
+    u.tweets=[general_tweet]
+    u.save
+    
+    u.tweets.length.should eq 1
+    
+    #now add a bunch of tweet to people
+    tweets=[]
+    (1..10).each do |i|
+      tweet=Tweet.create i, "hello #{i}"
+      tweets.push tweet
+    end
+    u.tweets=tweets
+    u.save
+    
+    #tweets for that particular user 
+    u.tweets(10).length.should eq 1
+    
+    #all tweets sent by me
+    u.tweets.length.should eq 11
+    
+  end
+end
+
+describe User do
+
+  it "should have tweets" do
+    u=User.new id=78901
+    u.save
+    u.tweets.length.should eq 0
+
+    #add tweet
+    time=Time.now
+    tweet=Tweet.create(1, "hello #{time.to_i}")
+    tweets=u.tweets(1)
+    tweets.push tweet
+    u.tweets=tweets
+    u.save
+
+    u.tweets(1).length.should eq 1
+
+    #now load new instance and see if it gets pulled from redis
+    user=User.new id
+    user.tweets(1).length.should eq 1
+    user.tweets(1).first.message.should eq "hello #{time.to_i}"
+  end
+
+  it "should send tweets to watch list member" do
+    u=User.new id=99331
+    #mock retweet of watch list memeber
+    t=Tweet.create 1, "RT @MittRomney Happy Birthday wishes to a great friend and Iowa's outstanding Lt. Gov. @KimReynoldsIA!"
+    tweets=u.tweets(1)
+    tweets.push t
+    u.tweets=tweets
+    u.save
+    u.tweets(1).length.should eq 1
+
+
+  end
+
   it "should add friend then from should follow back" do
     u=User.new uid=893
     add_time=1.day.ago
     id=9999
     u.add_friend(add_time, id)
     u.save
-    
+
     u.bros.length.should eq 0
-    
+
     follow_time=3.hours.ago
     u.add_follower(follow_time, id)
     u.save
-    
+
     bros=u.bros
     bros.length.should eq 1
     bro=bros.first
     bro.timestamp.to_i.should eq follow_time.to_i #should be time they followed me back
     bro.id.should eq id
   end
-  
-  it "should get follower and then follow him back" do 
+
+  it "should get follower and then follow him back" do
     u=User.new uid=2399
     follow_time=10.hours.ago
     id=1
     u.add_follower(follow_time, id) #kristy followed me
     u.save
-    
+
     u.bros.length.should eq 0
-    
+
     add_time=4.hours.ago # 6 hours later I follow her back -- this is the time we become bros!
     u.add_friend(add_time, id) #
     u.save
-    
+
     bros=u.bros
     bros.length.should eq 1
     bro=bros.first
     bro.timestamp.to_i.should eq add_time.to_i #should be time I followed them back
   end
-  
-  it 'should have a timeline of events' do 
+
+  it 'should have a timeline of events' do
     u=User.new 24321
     (1..10).each do |i|
       u.add_friend(i.days.ago, i)
@@ -53,12 +139,12 @@ describe User do
       u.add_follower((j+20).days.ago, j+20)
     end
     u.save
-    
+
     u.friends.length.should eq 10
     u.followers.length.should eq 10
     u.hash.length.should eq 20
     last_hash = u.hash
-    
+
     #NOW load diff instance and see if it's in the hash
     u=User.new 24321
     timeline=u.timeline
@@ -76,12 +162,58 @@ describe User do
   end
 
   it "UC #3 - bro should have associated tweets" do
-    u=user_with_bro_who_has_tweets
+    u=User.new 199983
+    u.add_friend 4
+    u.add_friend 5
+    u.add_follower 4
+    u.save
+    u
 
-    bro=u.bros(to: Time.now).first
+    bro=u.bros().first
 
-    #check for all tweets to this bro
+    #get the tweets that I sent to this *bro
     bro.tweets.length.should eq 0
+
+    tweets=bro.tweets
+    tweets.push Tweet.create 1, m="i am a message to one of my friends I want to follow back"
+    bro.tweets=tweets
+
+    bro.tweets(1).length.should eq 1
+
+    #check for tweet w/ diff instance
+    user=User.new 199983
+    user.bros.first.tweets(1).length.should eq 1
+    user.bros.first.tweets(1).first.message.should eq m
+  end
+
+  it "should sent tweet to non-bro, then he becomes bro, then check if that message is still there" do
+    u=User.new id=439914
+    add_time=3.months.ago
+    u.add_friend add_time, 1
+    u.save
+
+    u.non_bros.length.should eq 1
+    non_bro=u.non_bros.first
+    #now send him a message to try and get him to follow you back
+    tweet=Tweet.create 1, "hey you, follow me back!"
+    tweet2=Tweet.create 1, "i'll pay you to follow me. Aren't we bros???"
+    tweets=non_bro.tweets(1)
+    tweets.push tweet
+    tweets.push tweet2
+    non_bro.tweets=tweets
+    non_bro.tweets.length.should eq 2
+
+    #we convinced him to follow us back
+    now=Time.now
+    u.add_follower(now, 1)
+    u.save
+    u.bros.length.should eq 1
+    bro=u.bros.first
+
+    #when did he become my bro?
+    bro.timestamp.to_i.should eq now.to_i
+    #how many tweets did it take to convert him?
+    bro.tweets.length.should eq 2
   end
 
   it "UC #2 - should show date someone followed me" do
@@ -207,7 +339,7 @@ describe User do
     friends.ids.should eq [5,4]
 
   end
-  
+
   it "should return FriendshipCollection for non-bros call" do
     u=User.new 1242
     u.non_bros.class.should eq FriendshipCollection

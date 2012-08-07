@@ -70,9 +70,10 @@ module HighDawn
         u.remove_follower(lf)
       end
 
+
       u.save
 
-      self.cache_usernames(new_friends + new_followers)
+      self.cache_usernames((new_friends + new_followers).uniq)
     end
 
     def self.cache_usernames(ids)

@@ -18,24 +18,24 @@ module HighDawn
     end
 
     def friends
-      @friends ||= @client.friend_ids(@client.user.id).ids
+       Twitter.friend_ids(Twitter.user.id).ids
     end
 
     def followers
-      @followers ||= @client.follower_ids(@client.user.id).ids
+       Twitter.follower_ids(Twitter.user.id).ids
     end
 
     def bros
-      @bros ||= (@friends & @followers)
+       (@friends & @followers)
     end
 
     def non_bros
-      @non_bros ||= (@friends - @bros)
+       (@friends - @bros)
     end
 
-    def invalidate_cache
-      @friends = @followers = @bros = @non_bros = nil
-    end
+    # def invalidate_cache
+    #   @friends = @followers = @bros = @non_bros = nil
+    # end
 
   end
 end

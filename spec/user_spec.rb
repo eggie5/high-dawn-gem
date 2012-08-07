@@ -29,7 +29,31 @@ include HighDawn
 
 describe User do
   
-  it "should have a timeline of events" do 
+  it "should add & remove friend in one instance" do 
+    #an example of this case is when, for example, the snapshot
+    #script runs and in that time perion from the last snapshot
+    #you both added a friend and deleted a friend
+    
+    u=User.new 123454321
+    now=Time.now
+    u.add_friend(1)
+    u.remove_friend(1)
+    u.add_follower(1)
+    u.remove_follower(1)
+    u.save
+    u.friends.length.should eq 0
+    u.followers.length.should eq 0
+    
+    u=User.new 123454321
+    now=Time.now
+    u.add_friend(1)
+    u.add_follower(1)
+    u.save
+    u.friends.length.should eq 1
+    u.followers.length.should eq 1
+  end
+
+  it "should have a timeline of events" do
     u=User.new id=2229941
     u.add_friend(3.weeks.ago, 1)
     u.add_friend(2.weeks.ago, 2)
@@ -37,47 +61,47 @@ describe User do
     u.remove_friend(rt, 1)
     u.save
     timeline=u.timeline
-    
-    ap timeline
-    
+
+    #ap timeline
+
     timeline.length.should eq 3
     timeline[timeline.keys.last].first[:event].should eq :unfollow
   end
-  
+
   it "should add non_bro to watch list" do
     u=User.new id=32002
     u.add_friend(1)
     u.add_friend(2)
     u.save
     u.non_bros.length.should eq 2
-    
+
     #now I want to target this user and add them
     #to my watch list in hopes of engadgeing them
     #w/ usefully comments, etc and getting them
     #to follow me back
-    
+
     u.watch_list= [u.non_bros[0].id, u.non_bros[1].id]
     u.watch_list.length.should eq 2
-    
+
     #now check my watch list
     u=User.new id=32002
     u.watch_list.length.should eq 2
     # p u.watch_list
     u.watch_list.include?(1).should eq true
     u.watch_list.include?(2).should eq true
-    
-    
+
+
   end
-  
+
   it "should show all tweets sent" do
     u=User.new id=2839
-    
+
     general_tweet=Tweet.new "I am a general tweet not to anybody in particular"
     u.tweets=[general_tweet]
     u.save
-    
+
     u.tweets.length.should eq 1
-    
+
     #now add a bunch of tweet to people
     tweets=[]
     (1..10).each do |i|
@@ -86,13 +110,13 @@ describe User do
     end
     u.tweets=tweets
     u.save
-    
-    #tweets for that particular user 
+
+    #tweets for that particular user
     u.tweets(10).length.should eq 1
-    
+
     #all tweets sent by me
     u.tweets.length.should eq 11
-    
+
   end
 end
 
@@ -348,12 +372,48 @@ describe User do
     u.remove_follower(4)
     u.remove_follower(5)
     u.remove_follower(3)
-    u.remove_follower(2)
+    # u.remove_follower(2)
     u.save
 
+    u.followers.length.should eq 1
+    u.followers.first.id.should eq 2
+
+    u=User.new 9324
+    u.followers.length.should eq 1
+    u.followers.first.id.should eq 2
+
+    u.add_follower(1.minute.ago, 1234)
+    u.save #2 and 1234
+    u.followers.length.should eq 2
+
+    u.add_friend(10.days.ago, 2)
+    u.save
+
+    u.friends.length.should eq 1
+    u.followers.length.should eq 2
+
+    u.add_friend(2.days.ago, 2342)
+    u.add_friend(1.day.ago, 23424)
+    u.add_friend(3.days.ago, 203820)
+    u.remove_friend(23424)
+    u.remove_follower(2)
+    u.remove_friend(2342)
+
+    u.save
+    u.friends.length.should eq 2
+    u.followers.length.should eq 1
+
+    u.remove_friend(203820)
+    u.remove_friend(2)
+    u.save
+    
+    u.friends.length.should eq 0
+    u.remove_follower(1234)
+    u.save
     u.followers.length.should eq 0
 
   end
+
 
   it "should have a current list of friends" do
     u=get_user4();

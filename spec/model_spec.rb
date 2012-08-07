@@ -53,7 +53,7 @@ describe TimelineModel do
      u.save
    
     #this is probalby a dumb test...
-     r=Redis.new(db: 1)
+     r=REDIS
      membs = r.smembers "users:#{u.id}:timestamp:#{t.to_i}"
      f=membs.collect{|str| eval str }[0]
      f[:event].should eq :follow

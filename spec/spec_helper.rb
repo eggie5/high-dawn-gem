@@ -11,9 +11,9 @@ require 'snapshot'
 
 # uri= URI.parse("redis://redistogo:f793febde5cb91ab39a7e1223be904bc@scat.redistogo.com:9198/0")
 uri= URI.parse("redis://:JbUzPW0aS1hVg5jPX3n40OzPjEalMQOTSiOeT6MRKgViNolrJuJKmemmhN56CiCt@50.19.218.147:10097/0")
-REDIS = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password, :db=> uri.path[1])
+# REDIS = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password, :db=> uri.path[1])
 
-# REDIS=Redis.new(db: 1)
+REDIS=Redis.new(db: 1)
 
 include HighDawn
 

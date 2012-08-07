@@ -16,13 +16,13 @@ module HighDawn
           event=node[:event]
           follower=node[:follower]
           followee=node[:followee]
-          key="users:#{id}:timestamp:#{timestamp.to_i}"
+          key="users:#{id}:timestamp:#{timestamp}"
           #puts "saving #{key}"
           obj=node
           @r.sadd key, obj
 
           #add this to the list so I can find this key for lookup later
-          @r.zadd "users:#{id}:timestamps", 0, timestamp.to_i
+          @r.zadd "users:#{id}:timestamps", 0, timestamp
         end
       end
     end
@@ -51,13 +51,13 @@ module HighDawn
       collection=FriendshipCollection.new
 
       @hash.each do |timestamp, bucket|
-        if(from <= timestamp && timestamp <= to)
+        if(from.to_i <= timestamp && timestamp <= to.to_i)
           bucket.each do |node|
             event=node[:event]
             follower=node[:follower]
             followee=node[:followee]
 
-            f=Friendship.new ; f.timestamp=timestamp
+            f=Friendship.new ; f.timestamp=Time.at(timestamp)
             f.id=(follower==user_id)? followee : follower
 
             if((filter==:friends && follower==user_id ) || (filter==:followers && followee==user_id))
@@ -81,7 +81,8 @@ module HighDawn
         resp=@r.smembers(key)
         hashes=deseralize_redis(resp)
 
-        time=Time.at(ts)
+        # time=Time.at(ts) # just use unix time instead of Time object
+        time = ts
         hash[time]=[] if hash[time].nil?
         hashes.each do |struct|
           hash[time].push struct

@@ -62,7 +62,6 @@ describe User do
     u.save
     timeline=u.timeline
 
-    #ap timeline
 
     timeline.length.should eq 3
     timeline[timeline.keys.last].first[:event].should eq :unfollow
@@ -461,7 +460,7 @@ describe User do
     friends=t.read(3.years.ago, Time.now, t.id, :friends)
     friends.length.should eq 4
     friend=friends[0]
-    friend.timestamp.day.should eq 3.days.ago.day
+    friend.timestamp.to_i.should eq 3.days.ago.to_i
     friend.id.should eq 2
   end
 end

@@ -34,7 +34,7 @@ module HighDawn
 
     #addes node to in-memory hash
     def add(options={})
-      ts=options[:time]
+      ts=options[:time].to_i
       struct={  event: options[:action],
         follower: options[:follower],
       followee: options[:followee] }

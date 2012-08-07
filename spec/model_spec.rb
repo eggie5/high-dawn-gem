@@ -13,8 +13,6 @@ describe TimelineModel do
      u.save
    
      before_hash=u.hash
-     # puts "before="
-     # ap before_hash
      before_hash.keys.length.should eq 2
      #now assert that the correct hash is rebuild from redis
    

@@ -30,7 +30,7 @@ include HighDawn
 describe User do
   
   it "should add & remove friend in one instance" do 
-    #an example of this case is when, for example, the snapshot
+    #an example of this case is when, the snapshot
     #script runs and in that time perion from the last snapshot
     #you both added a friend and deleted a friend
     
@@ -61,8 +61,6 @@ describe User do
     u.remove_friend(rt, 1)
     u.save
     timeline=u.timeline
-
-
     timeline.length.should eq 3
     timeline[timeline.keys.last].first[:event].should eq :unfollow
   end
@@ -140,6 +138,7 @@ describe User do
     user=User.new id
     user.tweets(1).length.should eq 1
     user.tweets(1).first.message.should eq "hello #{time.to_i}"
+    user.tweets.length.should eq 1
   end
 
   it "should send tweets to watch list member" do
@@ -155,7 +154,7 @@ describe User do
 
   end
 
-  it "should add friend then from should follow back" do
+  it "should add a friend then from should follow back" do
     u=User.new uid=893
     add_time=1.day.ago
     id=9999
@@ -217,21 +216,36 @@ describe User do
     timeline.should eq last_hash
   end
 
-  it 'should my followers between april and november' do
+  it 'should have followers between april and november' do
     u=User.new 881
-    u.add_follower(5.days.ago, 888)
+    u.add_follower(Time.parse("April 1, 2011"), 888)
     u.save
 
-    u.followers(from: 10.days.ago, to: 2.days.ago)
+    #there should be none in this timerange
+    u.followers(from: Time.parse("April 2, 2011"), to: Time.parse("March 30, 2012")).length.should eq 0
+    
+    #not add one
+    u.add_follower(Time.parse("June 20, 2011"), 1)
+    u.save
+    
+    #there sholud be 1 in teh time range now
+    u.followers(from: Time.parse("April 2, 2011"), to: Time.parse("March 30, 2012")).length.should eq 1
+    
+    #add one just outside the range
+    u.add_follower(Time.parse("March 31, 2011"), 2)
+    u.save
+    
+    #there sholud be 1 in teh time range now
+    u.followers(from: Time.parse("April 2, 2011"), to: Time.parse("March 30, 2012")).length.should eq 1
+    
   end
 
   it "UC #3 - bro should have associated tweets" do
     u=User.new 199983
     u.add_friend 4
     u.add_friend 5
-    u.add_follower 4
+    u.add_follower 4 #bro
     u.save
-    u
 
     bro=u.bros().first
 
@@ -239,7 +253,8 @@ describe User do
     bro.tweets.length.should eq 0
 
     tweets=bro.tweets
-    tweets.push Tweet.create 1, m="i am a message to one of my friends I want to follow back"
+    tweet_time=Time.now
+    tweets.push Tweet.create 1, m="@4 i am a message to one of my friends I want to follow back"
     bro.tweets=tweets
 
     bro.tweets(1).length.should eq 1
@@ -248,6 +263,7 @@ describe User do
     user=User.new 199983
     user.bros.first.tweets(1).length.should eq 1
     user.bros.first.tweets(1).first.message.should eq m
+    user.bros.first.tweets(1).first.timestamp.to_i.should eq tweet_time.to_i
   end
 
   it "should sent tweet to non-bro, then he becomes bro, then check if that message is still there" do
@@ -259,9 +275,11 @@ describe User do
     u.non_bros.length.should eq 1
     non_bro=u.non_bros.first
     #now send him a message to try and get him to follow you back
-    tweet=Tweet.create 1, "hey you, follow me back!"
-    tweet2=Tweet.create 1, "i'll pay you to follow me. Aren't we bros???"
+    tweet=Tweet.create 1, "@1 hey you, follow me back!"
+    tweet2=Tweet.create 1, "@1 i'll pay you to follow me. Aren't we bros???"
     tweets=non_bro.tweets(1)
+    #seeems liek brtter syntax would be:
+    #tweets=user.tweets(to: non_bro)
     tweets.push tweet
     tweets.push tweet2
     non_bro.tweets=tweets
@@ -320,7 +338,7 @@ describe User do
 
     bro=u.bros.first
     bro.id.should eq id
-    bro.timestamp.strftime("%Y.%m.%d").should eq at.strftime("%Y.%m.%d")
+    bro.timestamp.to_i.should eq at.to_i
 
   end
 
@@ -435,7 +453,7 @@ describe User do
     u.friends(to: 1.day.ago).length.should eq 1
 
     friends= u.friends(to: Time.now) # accumulated collection as of NOW
-
+    friends.length.should eq 2
     friends.ids.should eq [5,4]
 
   end
@@ -474,17 +492,7 @@ describe User, "#add" do
     u.add(time: today, followee: 3, action: :unfollowed, follower: 5);
     u.save
 
-    #timeline.length.should eq(2)
-
+    u.timeline.length.should eq(1)
   end
 end
 
-def user1
-  u=User.new 1
-  u.add_friend(3.days.ago, 2)
-  u.remove_friend(2.days.ago, 2) #unfollow
-  u.add_friend(1.day.ago, 5) # a day ago
-  u.add_friend(4) #now
-  u.save
-  u
-end

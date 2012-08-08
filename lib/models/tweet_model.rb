@@ -19,7 +19,6 @@ module HighDawn
     end
 
     def rread(to)
-
       if to.is_a? Integer
         key="user:#{id}:tweets:to:#{to}"
       elsif to.nil?

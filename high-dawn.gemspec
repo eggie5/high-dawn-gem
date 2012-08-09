@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Alex Egg"]
-  s.date = "2012-08-07"
+  s.date = "2012-08-09"
   s.description = "for project high-dawn"
   s.email = "eggie5@gmail.com"
   s.extra_rdoc_files = [
@@ -37,6 +37,7 @@ Gem::Specification.new do |s|
     "lib/models/watch_list_model.rb",
     "runner.rb",
     "scripts/snapshot.rb",
+    "spec/fixtures/oauth.yaml",
     "spec/friendship_spec.rb",
     "spec/high-dawn_spec.rb",
     "spec/model_spec.rb",
@@ -70,6 +71,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<rspec-core>, [">= 0"])
       s.add_development_dependency(%q<rspec-expectations>, [">= 0"])
       s.add_development_dependency(%q<rspec-mocks>, [">= 0"])
+      s.add_development_dependency(%q<webmock>, [">= 0"])
     else
       s.add_dependency(%q<awesome_print>, [">= 0"])
       s.add_dependency(%q<redis>, ["= 3.0.0"])
@@ -87,6 +89,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rspec-core>, [">= 0"])
       s.add_dependency(%q<rspec-expectations>, [">= 0"])
       s.add_dependency(%q<rspec-mocks>, [">= 0"])
+      s.add_dependency(%q<webmock>, [">= 0"])
     end
   else
     s.add_dependency(%q<awesome_print>, [">= 0"])
@@ -105,6 +108,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<rspec-core>, [">= 0"])
     s.add_dependency(%q<rspec-expectations>, [">= 0"])
     s.add_dependency(%q<rspec-mocks>, [">= 0"])
+    s.add_dependency(%q<webmock>, [">= 0"])
   end
 end
 

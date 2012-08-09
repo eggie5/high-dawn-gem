@@ -17,5 +17,8 @@ module HighDawn
       msg=JSON.parse json_str
       Tweet.create msg["to_id"], msg["message"]
     end
+    def retweet?
+      ((message=~ /RT/)!=nil)
+    end
   end
 end

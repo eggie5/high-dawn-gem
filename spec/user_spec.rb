@@ -28,12 +28,12 @@ include HighDawn
 # end
 
 describe User do
-  
-  it "should add & remove friend in one instance" do 
+
+  it "should add & remove friend in one instance" do
     #an example of this case is when, the snapshot
     #script runs and in that time perion from the last snapshot
     #you both added a friend and deleted a friend
-    
+
     u=User.new 123454321
     now=Time.now
     u.add_friend(1)
@@ -43,7 +43,7 @@ describe User do
     u.save
     u.friends.length.should eq 0
     u.followers.length.should eq 0
-    
+
     u=User.new 123454321
     now=Time.now
     u.add_friend(1)
@@ -223,21 +223,21 @@ describe User do
 
     #there should be none in this timerange
     u.followers(from: Time.parse("April 2, 2011"), to: Time.parse("March 30, 2012")).length.should eq 0
-    
+
     #not add one
     u.add_follower(Time.parse("June 20, 2011"), 1)
     u.save
-    
+
     #there sholud be 1 in teh time range now
     u.followers(from: Time.parse("April 2, 2011"), to: Time.parse("March 30, 2012")).length.should eq 1
-    
+
     #add one just outside the range
     u.add_follower(Time.parse("March 31, 2011"), 2)
     u.save
-    
+
     #there sholud be 1 in teh time range now
     u.followers(from: Time.parse("April 2, 2011"), to: Time.parse("March 30, 2012")).length.should eq 1
-    
+
   end
 
   it "UC #3 - bro should have associated tweets" do
@@ -423,7 +423,7 @@ describe User do
     u.remove_friend(203820)
     u.remove_friend(2)
     u.save
-    
+
     u.friends.length.should eq 0
     u.remove_follower(1234)
     u.save
@@ -462,6 +462,55 @@ describe User do
     u=User.new 1242
     u.non_bros.class.should eq FriendshipCollection
   end
+
+  it "should diff" do
+    u=User.new 3651
+    (1..4).each do |i|
+      u.add_friend(i)
+      u.add_follower(i)
+    end
+    u.save
+
+    #from twitter
+    friends=[1,2,3,4]
+    followers=[1,2,3,4,5,6]
+    h={:new_friends => [], :lost_friends => [], :new_followers => [5, 6], :lost_followers => []}
+
+    u.diff(friends, followers).should eq h
+  end
+
+  it "should apply diff" do
+    u=User.new 3651
+    u.add_friend(1)
+    u.add_friend(2)
+    u.add_friend(3)
+    u.add_friend(4)
+
+    u.add_follower(1)
+    u.add_follower(2)
+    u.add_follower(3)
+    u.add_follower(4)
+    u.save
+
+    #from twitter
+    friends=[1,3,4,99]
+    followers=[2,3,4,5,6]
+    h={:new_friends => [99], :lost_friends => [2], :new_followers => [5, 6], :lost_followers => [1]}
+
+    diff=u.diff(friends, followers)
+    diff.should eq h
+
+    #before diff is applied
+    u.friends.length.should eq 4
+    u.followers.length.should eq 4
+
+    #apply diff and assert changes
+    u.apply_diff diff
+
+    u.friends.length.should eq 4
+    u.followers.length.should eq 5
+
+  end
 end
 
 describe User do
@@ -494,5 +543,6 @@ describe User, "#add" do
 
     u.timeline.length.should eq(1)
   end
-end
 
+
+end

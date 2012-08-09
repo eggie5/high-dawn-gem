@@ -8,7 +8,7 @@ module HighDawn
   class User < TimelineModel
     include TweetModel
     include WatchListModel
-    
+
     attr_accessor :id
     attr_reader :hash
     def initialize(twitter_id)
@@ -109,12 +109,12 @@ module HighDawn
     def tweets(to=nil)
       @tweets = rread(to)
     end
-    
+
     def watch_list=(list)
       @watch_list=list
       wsave
     end
-    
+
     def watch_list
       @watch_list=wread
     end
@@ -127,6 +127,53 @@ module HighDawn
     #proxy to save timeline in model
     def save
       save_timeline
+    end
+
+    #for snapshot
+    def diff(b_friends, b_followers)
+      a_friends=friends.ids
+      a_followers=followers.ids
+
+      new_friends=b_friends - a_friends
+      new_followers=b_followers - a_followers
+
+      unfriended = a_friends - b_friends
+      lost_followers = a_followers - b_followers
+
+      diffs={
+        new_friends: new_friends,
+        lost_friends: unfriended,
+        new_followers: new_followers,
+      lost_followers: lost_followers}
+
+      diffs
+
+    end
+
+    def apply_diff(diffs)
+      new_friends = diffs[:new_friends]
+      new_followers = diffs[:new_followers]
+      unfriended = diffs[:lost_friends]
+      lost_followers = diffs[:lost_followers]
+      
+      new_friends.each do |nf|
+        add_friend(nf)
+      end
+
+      new_followers.each do |nf|
+        add_follower(nf)
+      end
+
+      unfriended.each do |uf|
+        remove_friend(uf)
+      end
+
+      lost_followers.each do |lf|
+        remove_follower(lf)
+      end
+
+      save
+      return diffs
     end
   end
 end

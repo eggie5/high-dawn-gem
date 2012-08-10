@@ -4,8 +4,6 @@ module HighDawn
   class TimelineModel
     def initialize(id)
       @hash={}
-      @r=REDIS
-      @tweets=[]
     end
 
 
@@ -17,12 +15,11 @@ module HighDawn
           follower=node[:follower]
           followee=node[:followee]
           key="users:#{id}:timestamp:#{timestamp}"
-          #puts "saving #{key}"
           obj=node
-          @r.sadd key, obj
+          REDIS.sadd key, obj
 
           #add this to the list so I can find this key for lookup later
-          @r.zadd "users:#{id}:timestamps", 0, timestamp
+          REDIS.zadd "users:#{id}:timestamps", 0, timestamp
         end
       end
     end
@@ -36,17 +33,15 @@ module HighDawn
 
 
     def read_timeline(from=3.years.ago, to=Time.now, user_id, filter) #filter = :friends | :followers | :all
+      key="users:#{user_id}:timestamps"
+      timestamps=REDIS.zrange(key, 0, -1).collect(&:to_i)
+      timestamps_range=get_range(timestamps, from.to_i, to.to_i)
 
-      zkey="users:#{user_id}:timestamps"
-      all_ts=@r.zrange(zkey, 0, -1).collect(&:to_i)
-      timestamps=get_range(all_ts, from.to_i, to.to_i)
-
-      @hash=build_hash_from_redis(timestamps, user_id)
+      @hash=build_hash_from_redis(timestamps_range, user_id)
 
       if(filter==:all)
         return @hash
       end
-
 
       collection=FriendshipCollection.new
 
@@ -78,7 +73,7 @@ module HighDawn
       hash={}
       timestamps.each do |ts|
         key="users:#{user_id}:timestamp:#{ts}"
-        resp=@r.smembers(key)
+        resp=REDIS.smembers(key)
         hashes=deseralize_redis(resp)
 
         # time=Time.at(ts) # just use unix time instead of Time object

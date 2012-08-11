@@ -9,11 +9,12 @@ module HighDawn
     include TweetModel
     include WatchListModel
 
-    attr_accessor :id
+    attr_accessor :id, :queue
     attr_reader :hash
     def initialize(twitter_id)
       super
       @id=twitter_id
+      @queue=[]
     end
 
     def add_friend(ts=Time.now, id)
@@ -127,7 +128,13 @@ module HighDawn
     #proxy to save timeline in model
     def save
       save_timeline
+      save_queue(id, @queue) #in waitlist module
     end
+    
+    def queue
+      (@queue.empty?) ? @queue=read_queue(id) : @queue
+    end
+    
 
     #for snapshot
     def diff(b_friends, b_followers)

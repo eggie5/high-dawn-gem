@@ -511,6 +511,28 @@ describe User do
     u.followers.length.should eq 5
 
   end
+
+  it "should have pending tweet queue" do
+    u=HighDawn::User.new id=73337
+    u.queue.length.should eq 0
+
+    before_tweet=Tweet.create(1, "I love all my fans, just rewteet me for a follow back -- Justin Beaver")
+    before_tweet_2= Tweet.create(1, "To all my fans: I love you!")
+    u.queue << before_tweet
+    u.queue << before_tweet_2
+    u.save
+    u.queue.length.should eq 2
+
+    
+
+    u=HighDawn::User.new id
+    u.queue.length.should eq 2
+    after_tweet=u.queue.first
+    after_tweet.message.should eq before_tweet.message
+    
+    u=HighDawn::User.new 39239
+    u.queue.length.should eq 0
+  end
 end
 
 describe User do

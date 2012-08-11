@@ -30,6 +30,7 @@ module HighDawn
       REDIS.set("tuid:#{id}", screen_name)
     end
 
+  
     def ssave
       #persist tweets
       @tweets.each do |tweet|

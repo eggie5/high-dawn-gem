@@ -25,7 +25,7 @@ module HighDawn
     #   Tweet.create {tuid: id, text: txt}
     # end
     def retweet?
-      ((message=~ /RT/)!=nil)
+      ((text=~ /RT/)!=nil)
     end
 
     def ==(o)

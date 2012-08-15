@@ -5,6 +5,7 @@ include HighDawn
 describe Tweet, "#create" do
   it "should work" do
     t=Tweet.create tuid: 7505382, text: "I love my fans!"
+    t.class.should eq Tweet
     t.tuid.should eq 7505382
     t.text.should eq "I love my fans!"
   end
@@ -23,5 +24,16 @@ describe Tweet, "#save" do
     tweet.tuid.should eq id
     tweet.text.should eq "I am tweet!"
 
+  end
+end
+
+describe Tweet, "#retweet?" do
+  it "should be a retweet" do
+    t=Tweet.create tuid: id=1234214, text: "RT I am tweet!"
+    t.retweet?.should eq true
+  end
+  it "should not be a retweet" do
+    t=Tweet.create tuid: id=1234214, text: "I am tweet!"
+    t.retweet?.should eq false
   end
 end

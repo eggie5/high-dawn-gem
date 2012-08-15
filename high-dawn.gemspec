@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "high-dawn"
-  s.version = "0.15.0"
+  s.version = "0.16.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Alex Egg"]
-  s.date = "2012-08-10"
+  s.date = "2012-08-15"
   s.description = "for project high-dawn"
   s.email = "eggie5@gmail.com"
   s.extra_rdoc_files = [
@@ -30,6 +30,7 @@ Gem::Specification.new do |s|
     "lib/high-dawn.rb",
     "lib/models/friendship.rb",
     "lib/models/model.rb",
+    "lib/models/non_bro.rb",
     "lib/models/tweet.rb",
     "lib/models/tweet_model.rb",
     "lib/models/twitter_user.rb",
@@ -38,11 +39,15 @@ Gem::Specification.new do |s|
     "runner.rb",
     "scripts/snapshot.rb",
     "spec/fixtures/oauth.yaml",
+    "spec/fixtures/tweet.rb",
     "spec/friendship_spec.rb",
     "spec/high-dawn_spec.rb",
     "spec/model_spec.rb",
+    "spec/non_bro_spec.rb",
     "spec/snapshot_spec.rb",
     "spec/spec_helper.rb",
+    "spec/tweet_model_spec.rb",
+    "spec/tweet_spec.rb",
     "spec/user_spec.rb"
   ]
   s.homepage = "http://github.com/eggie5/high-dawn"

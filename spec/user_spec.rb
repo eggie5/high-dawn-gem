@@ -77,11 +77,13 @@ describe User do
     #w/ usefully comments, etc and getting them
     #to follow me back
 
-    u.watch_list= [u.non_bros[0].id, u.non_bros[1].id]
+    u.watch_list.push u.non_bros[0].id
+    u.watch_list.push u.non_bros[1].id
     u.watch_list.length.should eq 2
+    u.save
 
     #now check my watch list
-    u=User.new id=32002
+    u=User.new id
     u.watch_list.length.should eq 2
     # p u.watch_list
     u.watch_list.include?(1).should eq true
@@ -93,31 +95,26 @@ describe User do
   it "should show all tweets sent" do
     u=User.new id=2839
 
-    general_tweet=Tweet.new "I am a general tweet not to anybody in particular"
-    u.tweets=[general_tweet]
-    u.save
+    user_tweet = u.create_tweet(text: "this is a tweet from me, user: #{id}")
+    u.tweets.length.should eq 1
 
     u.tweets.length.should eq 1
 
     #now add a bunch of tweet to people
     tweets=[]
     (1..10).each do |i|
-      tweet=Tweet.create i, "hello #{i}"
-      tweets.push tweet
+      tweet=Tweet.create({tuid: id, to_id: i, text: "hello #{i}"})
+      u.tweets.push tweet
     end
-    u.tweets=tweets
-    u.save
 
+    u.save
     #tweets for that particular user
-    u.tweets(10).length.should eq 1
+    u.tweets(to: 10).length.should eq 1
 
     #all tweets sent by me
     u.tweets.length.should eq 11
 
   end
-end
-
-describe User do
 
   it "should have tweets" do
     u=User.new id=78901
@@ -126,30 +123,26 @@ describe User do
 
     #add tweet
     time=Time.now
-    tweet=Tweet.create(1, "hello #{time.to_i}")
-    tweets=u.tweets(1)
-    tweets.push tweet
-    u.tweets=tweets
+    tweet=Tweet.create(tuid: id, to_id: 1, text: "hello #{time.to_i}")
+    u.tweets.push tweet
     u.save
 
-    u.tweets(1).length.should eq 1
+    u.tweets(to: 1).length.should eq 1
 
     #now load new instance and see if it gets pulled from redis
     user=User.new id
-    user.tweets(1).length.should eq 1
-    user.tweets(1).first.message.should eq "hello #{time.to_i}"
+    user.tweets(to: 1).length.should eq 1
+    user.tweets(to: 1).first.text.should eq "hello #{time.to_i}"
     user.tweets.length.should eq 1
   end
 
   it "should send tweets to watch list member" do
     u=User.new id=99331
     #mock retweet of watch list memeber
-    t=Tweet.create 1, "RT @MittRomney Happy Birthday wishes to a great friend and Iowa's outstanding Lt. Gov. @KimReynoldsIA!"
-    tweets=u.tweets(1)
-    tweets.push t
-    u.tweets=tweets
+    t=Tweet.create tuid: id, text: "RT @MittRomney Happy Birthday wishes to a great friend and Iowa's outstanding Lt. Gov. @KimReynoldsIA!"
+    u.tweets.push t
     u.save
-    u.tweets(1).length.should eq 1
+    u.tweets.length.should eq 1
 
 
   end
@@ -241,29 +234,25 @@ describe User do
   end
 
   it "UC #3 - bro should have associated tweets" do
-    u=User.new 199983
+    u=User.new id=199983
     u.add_friend 4
     u.add_friend 5
-    u.add_follower 4 #bro
+    #tweet 4 so he'll follow me back and be my bro
+    u.add_follower 4 #bro - mock follow back
     u.save
-
     bro=u.bros().first
-
-    #get the tweets that I sent to this *bro
-    bro.tweets.length.should eq 0
-
-    tweets=bro.tweets
     tweet_time=Time.now
-    tweets.push Tweet.create 1, m="@4 i am a message to one of my friends I want to follow back"
-    bro.tweets=tweets
+    bro.create_tweet tuid: id, text: m="@4 i am a message to one of my friends I want to follow back"
 
-    bro.tweets(1).length.should eq 1
+    #so I have one bro - let's explore how he became a bro
+    # bro.tweets.length.should eq 1
+    u.tweets(to: 4).length.should eq 1 #I only sent him one message on twitter
 
     #check for tweet w/ diff instance
-    user=User.new 199983
-    user.bros.first.tweets(1).length.should eq 1
-    user.bros.first.tweets(1).first.message.should eq m
-    user.bros.first.tweets(1).first.timestamp.to_i.should eq tweet_time.to_i
+    user=User.new id
+    # user.bros.first.tweets(1).length.should eq 1
+    #  user.bros.first.tweets(1).first.text.should eq m
+    #  user.bros.first.tweets(1).first.timestamp.to_i.should eq tweet_time.to_i
   end
 
   it "should sent tweet to non-bro, then he becomes bro, then check if that message is still there" do
@@ -275,15 +264,15 @@ describe User do
     u.non_bros.length.should eq 1
     non_bro=u.non_bros.first
     #now send him a message to try and get him to follow you back
-    tweet=Tweet.create 1, "@1 hey you, follow me back!"
-    tweet2=Tweet.create 1, "@1 i'll pay you to follow me. Aren't we bros???"
-    tweets=non_bro.tweets(1)
-    #seeems liek brtter syntax would be:
-    #tweets=user.tweets(to: non_bro)
-    tweets.push tweet
-    tweets.push tweet2
-    non_bro.tweets=tweets
-    non_bro.tweets.length.should eq 2
+    tweet=Tweet.create(tuid: id, text: "@1 hey you, follow me back!")
+    tweet2=Tweet.create(tuid: id, text: "@1 i'll pay you to follow me. Aren't we bros???")
+
+    #non_bro.create_tweet tuid: id, text: "@1 hey you, follow me back!"
+    #non_bro.create_tweet tuid: id, text: "@1 i'll pay you to follow me. Aren't we bros???"
+    u.create_tweet text: "@1 hey you, follow me back!", to_id: non_bro.id
+    u.create_tweet text: "@1 i'll pay you to follow me. Aren't we bros???", to_id: non_bro.id
+
+    u.tweets(to: non_bro.id).length.should eq 2
 
     #we convinced him to follow us back
     now=Time.now
@@ -295,7 +284,8 @@ describe User do
     #when did he become my bro?
     bro.timestamp.to_i.should eq now.to_i
     #how many tweets did it take to convert him?
-    bro.tweets.length.should eq 2
+    u.tweets(to: bro.id).length.should eq 2
+    # bro.tweets.length.should eq 2
   end
 
   it "UC #2 - should show date someone followed me" do
@@ -516,26 +506,26 @@ describe User do
     u=HighDawn::User.new id=73337
     u.queue.length.should eq 0
 
-    before_tweet=Tweet.create(1, "I love all my fans, just rewteet me for a follow back -- Justin Beaver")
-    before_tweet_2= Tweet.create(1, "To all my fans: I love you!")
+    before_tweet=Tweet.create({tuid: id, to_id: 1, text:"I love all my fans, just rewteet me for a follow back -- Justin Beaver"})
+    before_tweet_2= Tweet.create({tuid: id, to_id: 1, text: "To all my fans: I love you!"})
     u.queue << before_tweet
     u.queue << before_tweet_2
     u.save
     u.queue.length.should eq 2
 
-    
+
 
     u=HighDawn::User.new id
     u.queue.length.should eq 2
     after_tweet=u.queue.first
-    after_tweet.message.should eq before_tweet.message
-    
+    after_tweet.text.should eq before_tweet.text
+    after_tweet.to_id.should eq 1
+    after_tweet.tuid.should eq id
+
     u=HighDawn::User.new 39239
     u.queue.length.should eq 0
   end
-end
 
-describe User do
   it "should get a collection of users at a certain point in time" do
     t=User.new 234
 
@@ -567,4 +557,13 @@ describe User, "#add" do
   end
 
 
+end
+
+describe User, "#create_tweet" do
+  it "should add tweet" do
+    u=User.new id=1337
+    u.tweets.length.should eq 0
+    u.create_tweet text: "i'm new tweet text"
+    u.tweets.length.should eq 1
+  end
 end

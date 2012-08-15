@@ -15,9 +15,6 @@ module HighDawn
           url=Twitter.user(id).profile_image_url
           url_key="tuid:#{id}:image_url"
 
-          p "tuid:#{id}=#{screen_name}"
-          p "#{url_key}=#{url}"
-
           REDIS.pipelined do
             TweetModel::cache_id(id, screen_name)
             REDIS.set(url_key, url)
@@ -25,36 +22,58 @@ module HighDawn
         end
       end
     end
-    
+
     def self.cache_id(id, screen_name)
       REDIS.set("tuid:#{id}", screen_name)
     end
 
-  
-    def ssave
+    def save(id, tweet)
+      s=Marshal::dump tweet
+      
+      if !tweet.to_id.nil?
+        REDIS.sadd "user:#{id}:tweets:to:#{tweet.to_id}", s
+      end
+
+      #always save in the users general tweet bucket
+      key="user:#{id}:tweets"
+      REDIS.sadd key, s
+
+    end
+
+    def save_tweets(id, tweets)
       #persist tweets
-      @tweets.each do |tweet|
+      
+      tweets.each do |tweet|
+        s=Marshal::dump tweet
+        
         if !tweet.to_id.nil?
-          REDIS.sadd "user:#{id}:tweets:to:#{tweet.to_id}", tweet.to_json
+          key="user:#{id}:tweets:to:#{tweet.to_id}"
+          # p "#{key}=#{s}"
+          REDIS.sadd key, s
         end
 
         #always save in the users general tweet bucket
-        REDIS.sadd "user:#{id}:tweets", tweet.to_json
+        key="user:#{id}:tweets"
+        #p "SADD #{key}=#{tweet.to_json}"
+        
+        REDIS.sadd key, s
 
       end
     end
 
-    def rread(to)
-      if to.is_a? Integer
-        key="user:#{id}:tweets:to:#{to}"
-      elsif to.nil?
+    def read_tweets(id, options={})
+      
+      if options[:to]
+        key="user:#{id}:tweets:to:#{options[:to]}"
+      elsif options[:to].nil?
         key="user:#{id}:tweets"
       else
         raise "invalid arg: #{to}"
       end
+      # p "SMEMBERS #{key}"
 
       resp=REDIS.smembers key
-      resp.collect{|obj| Tweet.from_json(obj)}
+      resp.collect{|obj| tweet= Marshal::load(obj)}
     end
   end
 end

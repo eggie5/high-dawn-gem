@@ -57,13 +57,15 @@ module HighDawn
       @tweets=[]
     end
 
-    def tweets=(new_tweets)
-      @tweets=new_tweets
-      ssave
+    def tweets(options={}) #filter=:all | :id
+      @tweets = read_tweets(id, options)
     end
-    
-    def tweets(to=@id) #filter=:all | :id
-      @tweets = rread(to)
+
+    def create_tweet(options={})
+      options.merge!(to_id: id)
+      tweet=Tweet.create(options)
+      @tweets.push tweet
+      tweet.save(options[:tuid], tweet)
     end
 
 

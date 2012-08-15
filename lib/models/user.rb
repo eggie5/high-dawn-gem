@@ -15,6 +15,8 @@ module HighDawn
       super
       @id=twitter_id
       @queue=[]
+      @tweets=[]
+      @watch_list=[]
     end
 
     def add_friend(ts=Time.now, id)
@@ -31,6 +33,15 @@ module HighDawn
 
     def remove_follower(ts=Time.now, id)
       add(time: ts, follower: id, action: :unfollow, followee: self.id)
+    end
+
+    def create_tweet(options={})
+      options.merge! tuid: id
+      tweet=Tweet.create(options)
+      @tweets.push tweet
+      status=tweet.save(id, tweet)
+      
+      tweet if status
     end
 
     #addes node to in-memory hash
@@ -101,23 +112,16 @@ module HighDawn
       read(from, to, self.id, :all)
     end
 
-    def tweets=(new_tweets)
-      @tweets=new_tweets
-      ssave
-    end
-
     #either get all tweets from this user or tweets targeting someone
-    def tweets(to=nil)
-      @tweets = rread(to)
-    end
+    def tweets(options={})
 
-    def watch_list=(list)
-      @watch_list=list
-      wsave
+      @tweets=(@tweets.empty? || (@last_tweets_options!=options)) ? @tweets=read_tweets(self.id, options) : @tweets
+      @last_tweets_options=options
+      @tweets
     end
 
     def watch_list
-      @watch_list=wread
+      (@watch_list.empty?) ? @watch_list=read_watchlist(id) : @watch_list
     end
 
     #proxy to read timeline in model
@@ -129,12 +133,14 @@ module HighDawn
     def save
       save_timeline
       save_queue(id, @queue) #in waitlist module
+      save_tweets(id, @tweets)
+      save_watchlist(id, @watch_list)
     end
-    
+
     def queue
       (@queue.empty?) ? @queue=read_queue(id) : @queue
     end
-    
+
 
     #for snapshot
     def diff(b_friends, b_followers)
@@ -162,7 +168,7 @@ module HighDawn
       new_followers = diffs[:new_followers]
       unfriended = diffs[:lost_friends]
       lost_followers = diffs[:lost_followers]
-      
+
       new_friends.each do |nf|
         add_friend(nf)
       end

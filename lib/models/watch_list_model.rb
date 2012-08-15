@@ -23,14 +23,14 @@ module HighDawn
       queue_key="user:#{id}:pending_tweet_list"
      
       queue.each do |item|
-        REDIS.rpush(queue_key, Marshal::dump(item))
+        REDIS.sadd(queue_key, Marshal::dump(item))
       end
     end
 
     def read_queue(id)
       queue_key="user:#{id}:pending_tweet_list"
-      arr=REDIS.lrange(queue_key, 0, -1).collect do |json|
-        Marshal::load json
+      arr=REDIS.smembers(queue_key).collect do |bin_str|
+        Marshal::load bin_str
       end
       arr
     end

@@ -508,6 +508,7 @@ describe User do
 
     before_tweet=Tweet.create({tuid: id, to_id: 1, text:"I love all my fans, just rewteet me for a follow back -- Justin Beaver"})
     before_tweet_2= Tweet.create({tuid: id, to_id: 1, text: "To all my fans: I love you!"})
+    orphan_tweet= Tweet.create({tuid: id, to_id: 1, text: "I am orphan"})
     u.queue << before_tweet
     u.queue << before_tweet_2
     u.save
@@ -517,10 +518,9 @@ describe User do
 
     u=HighDawn::User.new id
     u.queue.length.should eq 2
-    after_tweet=u.queue.first
-    after_tweet.text.should eq before_tweet.text
-    after_tweet.to_id.should eq 1
-    after_tweet.tuid.should eq id
+    u.queue.include?(before_tweet).should eq true
+    u.queue.include?(before_tweet_2).should eq true
+    u.queue.include?(orphan_tweet).should eq false
 
     u=HighDawn::User.new 39239
     u.queue.length.should eq 0
@@ -565,5 +565,28 @@ describe User, "#create_tweet" do
     u.tweets.length.should eq 0
     u.create_tweet text: "i'm new tweet text"
     u.tweets.length.should eq 1
+  end
+end
+
+describe User, "#queue" do
+  it "should add tweet to queue" do
+    u=User.new id=13372
+    u.queue.length.should eq 0
+    u.queue << Tweet.create(tuid: 124209, text: "I follow back all my fans!")
+    u.save
+
+    u.queue.length.should eq 1
+
+    u=User.new id=13372
+    u.queue << Tweet.create(tuid: 124123213400, text: "JOE Just follow me! PLEASEE")
+    u.save
+
+    u.queue.length.should eq 2 #but will equal 3
+
+    u=User.new id=13372
+    u.queue << Tweet.create(tuid: 1224123213400, text: "tweet from justin bearver IAM")
+    u.save
+
+    u.queue.length.should eq 3 #but will equal 3
   end
 end

@@ -27,17 +27,26 @@ include HighDawn
 #   end
 # end
 
-describe User, "#rules" do 
+describe User, "#rules" do
   it "should have" do
     u=User.new id=2330892
     rule=Rule.new(id, Rule::REWTEET_ALL)
     u.rules << rule
     u.rules.first.should eq  rule
     u.save
-    
+
     u=User.new id=2330892
     u.rules.length.should eq 1
     u.rules.first.should eq rule
+
+    #delete rule
+    u.delete_rule rule
+    u.rules.length.should eq 0
+    u.save
+    u.rules.length.should eq 0
+
+    u=User.new id=2330892
+    u.rules.length.should eq 0
   end
 end
 

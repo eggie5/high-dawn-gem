@@ -139,7 +139,12 @@ module HighDawn
       save_queue(id, @queue) #in waitlist module
       save_tweets(id, @tweets)
       save_watchlist(id, @watch_list)
-      rules.each{|rule|rule.save}
+      rules.each{|rule|rule.create}
+    end
+    
+    def delete_rule(rule)
+      @rules.delete rule
+      rule.delete
     end
 
     def queue

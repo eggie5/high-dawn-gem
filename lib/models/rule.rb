@@ -12,8 +12,12 @@ module HighDawn
     REPLY="reply"
     RULES=[REWTEET_ALL, RETWEET_SELECTED, REPLY]
 
-    def save
-      RuleModel.save(user_id, action)
+    def create
+      RuleModel.create(user_id, action)
+    end
+    
+    def delete
+      RuleModel.delete(user_id, action)
     end
 
     def self.read(user_id)

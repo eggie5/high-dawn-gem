@@ -1,10 +1,16 @@
 module HighDawn
   module RuleModel
     
-    def self.save(user_id, rule)
+    def self.create(user_id, rule)
       key="user:#{user_id}:rules"
       p "#{key}=#{rule}"
       REDIS.sadd key, rule.to_s
+    end
+    
+    def self.delete(user_id, rule)
+      key="user:#{user_id}:rules"
+      p "#{key}=#{rule}"
+      REDIS.srem key, rule.to_s
     end
 
     def self.read(user_id)

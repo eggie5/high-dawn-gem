@@ -4,7 +4,7 @@ describe Rule, "save" do
   it "should save" do 
     user_id=93939132
     r=Rule.new user_id, Rule::REWTEET_ALL
-    r.save
+    r.create
     
     rules=REDIS.smembers("user:#{user_id}:rules")
     rules.should eq ["retweet_all"]

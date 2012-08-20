@@ -10,6 +10,7 @@ module HighDawn
     REWTEET_ALL="retweet_all"
     RETWEET_SELECTED="retweet_selected"
     REPLY="reply"
+    RULES=[REWTEET_ALL, RETWEET_SELECTED, REPLY]
     
     def save
       RuleModel.save(user_id, action)

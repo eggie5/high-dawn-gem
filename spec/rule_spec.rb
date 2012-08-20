@@ -9,4 +9,8 @@ describe Rule do
     rules=REDIS.smembers("user:#{user_id}:rules")
     rules.should eq ["retweet_all"]
   end
+  
+  it "should have many" do
+    HighDawn::Rule::RULES.length.should eq 3
+  end
 end

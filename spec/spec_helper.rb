@@ -8,6 +8,7 @@ require 'friendship'
 require 'model'
 require 'tweet'
 require 'snapshot'
+require 'rule'
 require 'webmock/rspec'
 
 # uri= URI.parse("redis://redistogo:f793febde5cb91ab39a7e1223be904bc@scat.redistogo.com:9198/0")

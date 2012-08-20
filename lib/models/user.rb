@@ -40,7 +40,7 @@ module HighDawn
       tweet=Tweet.create(options)
       @tweets.push tweet
       status=tweet.save(id, tweet)
-      
+
       tweet if status
     end
 
@@ -56,6 +56,10 @@ module HighDawn
       @hash[ts].push struct
     end
 
+
+    def rules(*args)
+      @rules ||= (Rule.read(id))
+    end
 
     def followers=(followers)
       @followers=followers
@@ -135,6 +139,7 @@ module HighDawn
       save_queue(id, @queue) #in waitlist module
       save_tweets(id, @tweets)
       save_watchlist(id, @watch_list)
+      rules.each{|rule|rule.save}
     end
 
     def queue

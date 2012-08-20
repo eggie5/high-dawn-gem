@@ -3,6 +3,7 @@ module HighDawn
     
     def self.save(user_id, rule)
       key="user:#{user_id}:rules"
+      p "#{key}=#{rule}"
       REDIS.sadd key, rule.to_s
     end
 
